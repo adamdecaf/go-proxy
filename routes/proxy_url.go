@@ -43,6 +43,7 @@ func ProxyUrl(w http.ResponseWriter, r *http.Request) {
 	//       and look at using a pooling lib / writing my own
 	// todo: check blacklist and reject
 	// todo: stats on hostname, response timings, etc
+	// todo: browser like http headers
 
 	client := &http.Client{}
 	res, err := client.Get(url.String())
