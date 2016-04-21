@@ -1,60 +1,61 @@
-package proxy
+// package proxy
 
-import (
-	"bufio"
-	"fmt"
-	"net/url"
-	"os"
-)
+// import (
+// 	"fmt"
+// 	"io"
+// 	"net/url"
+// 	"os"
+// )
 
-// reading
-// golang.org/x/net/proxy
-// github.com/elazarl/goproxy
-// PHProxy script (in Dropbox)
+// // reading
+// // golang.org/x/net/proxy
+// // github.com/elazarl/goproxy
+// // PHProxy script (in Dropbox)
 
-type Response interface {
-	Reader() bufio.Reader
-}
+// type Response interface {
+// 	Reader() io.Reader
+// }
 
-// todo: EmptyResponse (for errors)
+// // todo: EmptyResponse (for errors)
 
-type FullResponse struct {
-	Response
-}
+// type FullResponse struct {
+// 	Response
+// }
 
-func (r FullResponse) Reader() bufio.Reader {
-	reader, _ := os.Open("/dev/null")
-	// if err != nil {
-	// 	return "", err
-	// }
+// func (r FullResponse) Reader() io.Reader {
+// 	reader, _ := os.Open("/dev/null")
 
-	buf := bufio.NewReader(reader)
-	return *buf
-}
+// 	// if err != nil {
+// 	// 	return "", err
+// 	// }
 
-type Proxy interface {
-	Request(url url.URL) (Response, error)
-}
+// 	// r := io.NewReader(reader)
+// 	return reader
+// }
 
-type HttpProxy struct {
-	Proxy
-}
+// type Proxy interface {
+// 	Request(url url.URL) (Response, error)
+// }
 
-func (p HttpProxy) Request(url url.URL) (Response, error) {
-	blacklist, err := BlacklistFromFile()
-	if err != nil {
-		// log.Printf("")
-		return FullResponse{}, err // todo: EmptyResponse
-	}
+// type HttpProxy struct {
+// 	Proxy
+// }
 
-	if blacklist.Contains(url.Host) {
-		err := fmt.Errorf("url '%s' is in blacklist, ignoring", url)
-		return FullResponse{}, err // todo: EmptyResponse
-	}
+// func (p HttpProxy) Request(url url.URL) (Response, error) {
+// 	blacklist, err := BlacklistFromFile()
+// 	if err != nil {
+// 		// log.Printf("")
+// 		return FullResponse{}, err // todo: EmptyResponse
+// 	}
 
-	return FullResponse{}, nil
-}
+// 	if blacklist.Contains(url.Host) {
+// 		err := fmt.Errorf("url '%s' is in blacklist, ignoring", url)
+// 		return FullResponse{}, err // todo: EmptyResponse
+// 	}
 
-func NewHttpProxy() Proxy {
-	return HttpProxy{}
-}
+// 	return FullResponse{}, nil
+// }
+
+// func NewHttpProxy() Proxy {
+// 	return HttpProxy{}
+// }

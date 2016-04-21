@@ -23,17 +23,22 @@ func main() {
 	flag.Parse()
 
 	// Setup and start the http server
+	log.Printf("Starting http server on :%d\n", portFromFlag)
+
+	err := startHttpServer(portFromFlag)
+	if err != nil {
+		header := fmt.Sprintf("error binding to port %d\n", portFromFlag)
+		log.Fatalf(header, err)
+	}
+}
+
+func startHttpServer(port int) *error {
 	http.Handle("/", http.FileServer(http.Dir("./html/")))
 	http.HandleFunc("/ping", routes.Ping)
 	http.HandleFunc("/url/", routes.ProxyUrl)
 
-	log.Printf("Starting http server on :%d\n", portFromFlag)
-
-	listen := fmt.Sprintf(":%d", portFromFlag)
+	listen := fmt.Sprintf(":%d", port)
 	err := http.ListenAndServe(listen, nil)
 
-	if err != nil {
-		header := fmt.Sprintf("error binding to listen port (%s): ", listen)
-		log.Fatalf(header, err)
-	}
+	return &err
 }
