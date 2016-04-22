@@ -1,4 +1,27 @@
-// package proxy
+package proxy
+
+import (
+	// "fmt"
+	"net/http"
+	"time"
+	"github.com/hashicorp/go-retryablehttp"
+)
+
+type Proxy struct {
+	requestStart time.Time
+	requestEnd time.Time
+}
+
+func (p Proxy) Get(url string) (*http.Response, error) {
+	return retryablehttp.Get(url)
+}
+
+func NewProxy() Proxy {
+	proxy := Proxy{
+		requestStart: time.Now(),
+	}
+	return proxy
+}
 
 // import (
 // 	"fmt"

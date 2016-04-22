@@ -24,7 +24,6 @@ func main() {
 
 	// Setup and start the http server
 	log.Printf("Starting http server on :%d\n", portFromFlag)
-
 	err := startHttpServer(portFromFlag)
 	if err != nil {
 		header := fmt.Sprintf("error binding to port %d\n", portFromFlag)
