@@ -1,84 +1,70 @@
 package proxy
 
 import (
-	// "fmt"
-	"net/http"
-	"time"
+	"errors"
 	"github.com/hashicorp/go-retryablehttp"
 )
 
+var (
+	// defaults
+	DefaultHttpClient = retryablehttp.NewClient()
+
+	// errors
+	UnknownMethodError = errors.New("Unknown method for proxy request")
+)
+
+
+// A Proxy is a shared interface for making requests
+// it is supposed to be shared across goroutines and
+// also will perform changes to the request and response
+// in accordance to this proxy's requirements (headers,
+// response parsing / transforms, etc).
+//
+// Usage
+//  var DefaultProxy := NewProxy()
+//
+//  res, err := DefaultProxy.Get("http://example.com")
+//
 type Proxy struct {
-	requestStart time.Time
-	requestEnd time.Time
+	client *retryablehttp.Client
 }
 
-func (p Proxy) Get(url string) (*http.Response, error) {
-	return retryablehttp.Get(url)
-}
-
+// NewProxy() creates a new instance of the proxy to be
+// shared across goroutines
 func NewProxy() Proxy {
 	proxy := Proxy{
-		requestStart: time.Now(),
+		client: DefaultHttpClient,
 	}
 	return proxy
 }
 
-// import (
-// 	"fmt"
-// 	"io"
-// 	"net/url"
-// 	"os"
-// )
+func (p Proxy) Get(url string) (*Response, error) {
+	req := Request{
+		URL: url,
+		Method: GET,
+	}
+	return request(req)
+}
 
-// // reading
-// // golang.org/x/net/proxy
-// // github.com/elazarl/goproxy
-// // PHProxy script (in Dropbox)
+func get(req Request) (*Response, error) {
+	r, err := retryablehttp.Get(req.URL)
+	if err != nil {
+		return nil, err
+	}
 
-// type Response interface {
-// 	Reader() io.Reader
-// }
+	resp := Response{
+		Reader: r.Body,
+	}
 
-// // todo: EmptyResponse (for errors)
+	return &resp, nil
+}
 
-// type FullResponse struct {
-// 	Response
-// }
-
-// func (r FullResponse) Reader() io.Reader {
-// 	reader, _ := os.Open("/dev/null")
-
-// 	// if err != nil {
-// 	// 	return "", err
-// 	// }
-
-// 	// r := io.NewReader(reader)
-// 	return reader
-// }
-
-// type Proxy interface {
-// 	Request(url url.URL) (Response, error)
-// }
-
-// type HttpProxy struct {
-// 	Proxy
-// }
-
-// func (p HttpProxy) Request(url url.URL) (Response, error) {
-// 	blacklist, err := BlacklistFromFile()
-// 	if err != nil {
-// 		// log.Printf("")
-// 		return FullResponse{}, err // todo: EmptyResponse
-// 	}
-
-// 	if blacklist.Contains(url.Host) {
-// 		err := fmt.Errorf("url '%s' is in blacklist, ignoring", url)
-// 		return FullResponse{}, err // todo: EmptyResponse
-// 	}
-
-// 	return FullResponse{}, nil
-// }
-
-// func NewHttpProxy() Proxy {
-// 	return HttpProxy{}
-// }
+// check blacklist w/ `if req.IsBlacklisted()`
+func request(req Request) (*Response, error) {
+	switch req.Method {
+	default:
+		return nil, UnknownMethodError
+	case GET:
+		return get(req)
+	}
+}

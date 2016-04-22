@@ -1,5 +1,17 @@
 package proxy
 
+import (
+	"errors"
+)
+
+var (
+	// errors
+	HostnameBlacklisted = errors.New("This hostname has been blacklisted.")
+	SourceAddressBlacklisted = errors.New("This hostname has been blacklisted.")
+)
+
+// Blacklist is ...
+//
 type Blacklist interface {
 	Contains(string) bool
 }

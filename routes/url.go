@@ -11,6 +11,9 @@ import (
 	"strings"
 )
 
+// shared proxy instance
+var DefaultProxy = proxy.NewProxy()
+
 func ProxyUrl(w http.ResponseWriter, r *http.Request) {
 	decode_slug, err := readEncodedUrl(r)
 	if err != nil {
@@ -27,22 +30,21 @@ func ProxyUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// make the http call
-	client := proxy.NewProxy()
-	res, err := client.Get(url.String())
+	res, err := DefaultProxy.Get(url.String())
 	if err != nil {
 		log.Printf("error making request to url '%s' (err=%s)\n", url.String(), err)
 		respondWithError(w)
 		return
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	resp, err := ioutil.ReadAll(res.Reader)
 	if err != nil {
 		log.Printf("error reading response body from '%s' (err=%s)\n", url.String(), err)
 		respondWithError(w)
 		return
 	}
 
-	fmt.Fprintf(w, string(body))
+	fmt.Fprintf(w, string(resp))
 }
 
 func readEncodedUrl(r *http.Request) (string, error) {
