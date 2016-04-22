@@ -13,12 +13,10 @@ var (
 	UnknownMethodError = errors.New("Unknown method for proxy request")
 )
 
-
-// A Proxy is a shared interface for making requests
-// it is supposed to be shared across goroutines and
-// also will perform changes to the request and response
-// in accordance to this proxy's requirements (headers,
-// response parsing / transforms, etc).
+// A Proxy is a shared interface for making requests it is supposed
+// to be shared across goroutines and also will perform changes to
+// the request and response in accordance to this proxy's requirements
+// (headers, response parsing / transforms, etc).
 //
 // Usage
 //  var DefaultProxy := NewProxy()
@@ -59,7 +57,7 @@ func get(req Request) (*Response, error) {
 	return &resp, nil
 }
 
-// check blacklist w/ `if req.IsBlacklisted()`
+// todo: check blacklist w/ `if req.IsBlacklisted()`
 func request(req Request) (*Response, error) {
 	switch req.Method {
 	default:

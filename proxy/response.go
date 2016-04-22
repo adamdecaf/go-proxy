@@ -4,8 +4,8 @@ import (
 	"io"
 )
 
-// Response contains a buffered output of the interaction
-// performed on behalf of the requestor.e
+// Response contains a buffered output of the interaction performed on
+// behalf of the requestor.
 type Response struct {
 	Reader io.Reader
 }
