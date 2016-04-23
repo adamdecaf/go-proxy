@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"net"
 	"net/url"
 	"time"
 )
@@ -20,6 +21,7 @@ const (
 type Request struct {
 	URL url.URL
 	Method int
+	SourceAddress net.IP
 
 	// private
 	requestStart time.Time
