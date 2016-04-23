@@ -61,5 +61,6 @@ func readEncodedUrl(r *http.Request) (string, error) {
 }
 
 func respondWithError(w http.ResponseWriter) {
+	w.WriteHeader(http.StatusBadRequest)
 	fmt.Fprintf(w, "We're sorry, but this request has failed.")
 }
