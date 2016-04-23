@@ -21,7 +21,6 @@ type JSONBlacklist struct {
 	data JSONBlacklistData
 }
 
-// todo: way better sorting -- prefix/radix tree
 func (b JSONBlacklist) IsBlacklisted(req Request) *error {
 	host := removePort(req.URL.Host)
 
