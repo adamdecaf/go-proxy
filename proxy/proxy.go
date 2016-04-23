@@ -3,6 +3,9 @@ package proxy
 import (
 	"errors"
 	"github.com/hashicorp/go-retryablehttp"
+	"log"
+	"net"
+	"net/http"
 	"net/url"
 )
 
@@ -37,10 +40,11 @@ func NewProxy() Proxy {
 	return proxy
 }
 
-func (p Proxy) Get(url url.URL) (*Response, error) {
+func (p Proxy) Get(url url.URL, r http.Request) (*Response, error) {
 	req := Request{
 		URL: url,
 		Method: GET,
+		SourceAddress: parseSourceAddress(r),
 	}
 	return request(req)
 }
@@ -61,7 +65,13 @@ func get(req Request) (*Response, error) {
 // `request` checks the blacklist and rejects requests without performing them
 // if the blacklist is triggered.
 func request(req Request) (*Response, error) {
+	if req.SourceAddress == nil {
+		log.Printf("no source address on request for '%s'", req.URL.String())
+		return nil, SourceAddressBlacklisted
+	}
+
 	err := DefaultBlacklist.IsBlacklisted(req)
+
 	if err != nil  {
 		return nil, *err
 	}
@@ -72,4 +82,20 @@ func request(req Request) (*Response, error) {
 	case GET:
 		return get(req)
 	}
+}
+
+func parseSourceAddress(r http.Request) net.IP {
+	if h := r.Header.Get("X-Forwarded-For"); h != "" {
+		return parseFoundIP(h)
+	}
+
+	if h := r.Header.Get("Remote-Address"); h != "" {
+		return parseFoundIP(h)
+	}
+
+	return nil
+}
+
+func parseFoundIP(ip string) net.IP {
+	return net.ParseIP(ip)
 }

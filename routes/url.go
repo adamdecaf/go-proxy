@@ -30,7 +30,7 @@ func ProxyUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// make the http call
-	res, err := DefaultProxy.Get(*url)
+	res, err := DefaultProxy.Get(*url, *r)
 	if err != nil {
 		log.Printf("error making request to url '%s' (err=%s)\n", url.String(), err)
 		respondWithError(w)
