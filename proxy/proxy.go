@@ -3,6 +3,7 @@ package proxy
 import (
 	"errors"
 	"github.com/hashicorp/go-retryablehttp"
+	"net/url"
 )
 
 var (
@@ -36,7 +37,7 @@ func NewProxy() Proxy {
 	return proxy
 }
 
-func (p Proxy) Get(url string) (*Response, error) {
+func (p Proxy) Get(url url.URL) (*Response, error) {
 	req := Request{
 		URL: url,
 		Method: GET,
@@ -45,7 +46,7 @@ func (p Proxy) Get(url string) (*Response, error) {
 }
 
 func get(req Request) (*Response, error) {
-	r, err := retryablehttp.Get(req.URL)
+	r, err := retryablehttp.Get(req.URL.String())
 	if err != nil {
 		return nil, err
 	}
@@ -57,8 +58,14 @@ func get(req Request) (*Response, error) {
 	return &resp, nil
 }
 
-// todo: check blacklist w/ `if req.IsBlacklisted()`
+// `request` checks the blacklist and rejects requests without performing them
+// if the blacklist is triggered.
 func request(req Request) (*Response, error) {
+	err := DefaultBlacklist.IsBlacklisted(req)
+	if err != nil  {
+		return nil, *err
+	}
+
 	switch req.Method {
 	default:
 		return nil, UnknownMethodError

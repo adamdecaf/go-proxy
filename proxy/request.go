@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"net/url"
 	"time"
 )
 
@@ -11,7 +12,7 @@ import (
 // There are a few options along the request to be included
 // for metrics and performance monitoring.
 type Request struct {
-	URL string
+	URL url.URL
 	Method int
 
 	// private

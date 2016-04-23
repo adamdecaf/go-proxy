@@ -5,29 +5,26 @@ import (
 )
 
 var (
+	// defaults
+	DefaultBlacklist = NewBlacklist()
+
 	// errors
 	HostnameBlacklisted = errors.New("This hostname has been blacklisted.")
-	SourceAddressBlacklisted = errors.New("This hostname has been blacklisted.")
+	SourceAddressBlacklisted = errors.New("This source address has been blacklisted.")
 )
 
-// Blacklist is ...
+// Blacklist is a type which handles marking if a `Request` should not
+// be processed. This most often happens based on hostname or source ip.
 //
+// See `DefaultBacklist` for a shared instance
 type Blacklist interface {
-	Contains(string) bool
+	 IsBlacklisted(req Request) *error
 }
 
-type FileBlacklist struct {
-	Blacklist
-
-	// Private
-	items []string
-}
-
-func (b FileBlacklist) Contains(url string) bool {
-	// todo: read from file
-	return false
-}
-
-func BlacklistFromFile() (Blacklist, error) {
-	return FileBlacklist{}, nil
+func NewBlacklist() Blacklist {
+	b, err := NewJSONBlacklist()
+	if err != nil {
+		return NewEmptyBlacklist()
+	}
+	return b
 }
