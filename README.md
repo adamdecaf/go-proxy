@@ -6,7 +6,7 @@
 
 1. `go get github.com/adamdecaf/go-proxy`
 1. `cd $GOPATH/src/github.com/adamdecaf/go-proxy`
-1. `go install`
+1. `make build && go install`
 
 Then you can run `go-proxy` (or `-p 8080` for some other port)
 
