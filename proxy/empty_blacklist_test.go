@@ -23,7 +23,7 @@ func TestEmptyBlacklist(t *testing.T) {
 
 		e := bl.IsBlacklisted(req)
 		if e != nil {
-			t.Fatalf("EmptyBlacklist should never reject anything hostname - %s", req)
+			t.Fatalf("EmptyBlacklist should never reject anything hostname - %s", req.URL.String())
 		}
 	}
 }
