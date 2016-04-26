@@ -24,6 +24,7 @@ func (t HTMLTransformer) Transform(in Response) Response {
 	f = func(n *html.Node) {
 		replaceAHrefs(n)
 		replaceImgSrcs(n)
+		replaceScriptSrcs(n)
 	}
 
 	f(doc)
@@ -71,6 +72,22 @@ func replaceImgSrcs(n *html.Node) {
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		replaceImgSrcs(c)
+	}
+}
+
+// replaceScriptSrcs is a greedy depth-first search and replace for
+// `src` attributes in `script` elements.
+func replaceScriptSrcs(n *html.Node) {
+	if n.Type == html.ElementNode && n.Data == "script" {
+		for i, a := range n.Attr {
+			if a.Key == "src" {
+				a.Val = fmt.Sprintf("/url/%s", codec.ToBase64(a.Val))
+			}
+			n.Attr[i] = a
+		}
+	}
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		replaceScriptSrcs(c)
 	}
 }
 
