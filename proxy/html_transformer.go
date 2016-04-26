@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"github.com/adamdecaf/go-proxy/codec"
 	"golang.org/x/net/html"
@@ -51,12 +50,6 @@ func (t HTMLTransformer) Transform(in Response) Response {
 	return Response{
 		Reader: combined,
 	}
-}
-
-// `encodeBase64` returns a UTF-8 string in it's base64 encoding
-func encodeBase64(s string) string {
-	bytes := []byte(s)
-	return base64.StdEncoding.EncodeToString(bytes)
 }
 
 func NewHTMLTransformer() Transformer {
