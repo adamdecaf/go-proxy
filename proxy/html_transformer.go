@@ -63,32 +63,6 @@ func encodeBase64(s string) string {
 	return base64.StdEncoding.EncodeToString(bytes)
 }
 
-func copyNode(old *html.Node) *html.Node {
-	n := new(html.Node)
-	n.Type = old.Type
-	n.DataAtom = old.DataAtom
-	n.Data = old.Data
-	n.Attr = make([]html.Attribute, len(old.Attr))
-	copy(n.Attr, old.Attr)
-	for c := old.FirstChild; c != nil; c = c.NextSibling {
-		nc := copyNode(c)
-		n.AppendChild(nc)
-	}
-	return n
-}
-
-func replaceNode(old, new *html.Node) *html.Node {
-	parent := old.Parent
-
-	// nil would mean the root element
-	if parent != nil {
-		parent.InsertBefore(copyNode(new), old)
-		parent.RemoveChild(old)
-	}
-
-	return new
-}
-
 func NewHTMLTransformer() Transformer {
 	return HTMLTransformer{}
 }
