@@ -26,10 +26,6 @@ func (t HTMLTransformer) Transform(in Response) Response {
 		if n.Type == html.ElementNode && n.Data == "a" {
 			for i, a := range n.Attr {
 				if a.Key == "href" {
-					// todo: need to resolve
-					// relative (/about.html)
-					// and
-					// protcol dependent urls (//foo.com)
 					a.Val = fmt.Sprintf("/url/%s", codec.ToBase64(a.Val))
 				}
 				n.Attr[i] = a
