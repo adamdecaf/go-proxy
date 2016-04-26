@@ -55,36 +55,6 @@ func (t HTMLTransformer) Transform(in Response) Response {
 	return Response{
 		Reader: combined,
 	}
-
-	// for {
-	// 	token := tokenizer.Next()
-	// 	switch {
-	// 	default:
-	// 		// ignore all other html tokens
-	// 		continue
-	// 	case token == html.StartTagToken:
-	// 		t := tokenizer.Token()
-	// 		// <a> element
-	// 		isAnchor := t.Data == "a"
-	// 		if isAnchor {
-	// 			// find the `href` attribute
-	// 			for _, a := range t.Attr {
-	// 				if a.Key == "href" {
-	// 					// todo: need to resolve
-	// 					// relative (/about.html)
-	// 					// and
-	// 					// protcol dependent urls (//foo.com)
-	// 					encodeBase64(a.Val)
-	// 					// todo: encode url and replace it
-	// 					fmt.Println("Found href:", )
-	// 					break
-	// 				}
-	// 			}
-	// 		}
-	// 		// <img> element
-	// 		// <script> element
-	// 	}
-	// }
 }
 
 // `encodeBase64` returns a UTF-8 string in it's base64 encoding
