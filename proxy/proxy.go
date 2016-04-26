@@ -71,11 +71,29 @@ func request(req Request) (*Response, error) {
 	}
 
 	err := DefaultBlacklist.IsBlacklisted(req)
-
 	if err != nil  {
 		return nil, *err
 	}
 
+	r, e := makeRequest(req)
+	if e != nil {
+		return nil, e
+	}
+
+	// fold over transformers off the original response
+	if r != nil {
+		for i := range DefaultTransformers {
+			morphed := DefaultTransformers[i].Transform(*r)
+			r = &morphed
+		}
+	}
+
+	return r, nil
+}
+
+// `makeRequest` just gives us a wrapper around returning tuples of
+// request execution.
+func makeRequest(req Request) (*Response, error) {
 	switch req.Method {
 	default:
 		return nil, UnknownMethodError

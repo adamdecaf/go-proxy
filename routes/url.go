@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"encoding/base64"
 	"fmt"
+	"github.com/adamdecaf/go-proxy/codec"
 	"github.com/adamdecaf/go-proxy/proxy"
 	"io/ioutil"
 	"log"
@@ -15,12 +15,7 @@ import (
 var DefaultProxy = proxy.NewProxy()
 
 func ProxyUrl(w http.ResponseWriter, r *http.Request) {
-	decode_slug, err := readEncodedUrl(r)
-	if err != nil {
-		log.Printf("error parsing path '%s' into raw slug", r.URL.Path)
-		respondWithError(w)
-		return
-	}
+	decode_slug := readEncodedUrl(r)
 
 	url, err := url.Parse(strings.TrimSpace(decode_slug))
 	if err != nil {
@@ -47,17 +42,10 @@ func ProxyUrl(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, string(resp))
 }
 
-func readEncodedUrl(r *http.Request) (string, error) {
+func readEncodedUrl(r *http.Request) string {
 	// strip off /url/ from the path beginning
 	raw_slug := strings.Replace(r.URL.Path, "/url/", "", 1)
-
-	// attempt to decode base64
-	bytes, err := base64.StdEncoding.DecodeString(raw_slug)
-	if err != nil {
-		return "", err
-	}
-
-	return string(bytes), nil
+	return codec.FromBase64(raw_slug)
 }
 
 func respondWithError(w http.ResponseWriter) {
