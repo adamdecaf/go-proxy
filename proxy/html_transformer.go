@@ -25,6 +25,7 @@ func (t HTMLTransformer) Transform(in Response) Response {
 		replaceAHrefs(n)
 		replaceImgSrcs(n)
 		replaceScriptSrcs(n)
+		replaceLinkHrefs(n)
 	}
 
 	f(doc)
@@ -56,6 +57,22 @@ func replaceAHrefs(n *html.Node) {
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		replaceAHrefs(c)
+	}
+}
+
+// `replaceLinkHrefs` is a greedy depth-first search and replace for
+// `href` attributes in `link` elements.
+func replaceLinkHrefs(n *html.Node) {
+	if n.Type == html.ElementNode && n.Data == "link" {
+		for i, a := range n.Attr {
+			if a.Key == "href" {
+				a.Val = fmt.Sprintf("/url/%s", codec.ToBase64(a.Val))
+			}
+			n.Attr[i] = a
+		}
+	}
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		replaceLinkHrefs(c)
 	}
 }
 
