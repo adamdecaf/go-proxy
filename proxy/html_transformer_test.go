@@ -31,3 +31,29 @@ func TestHTMLReplceLinks(t *testing.T) {
 		t.Fatalf("parsed response '%s' doens't match answer\n", res)
 	}
 }
+
+func TestHTMLReplaceImages(t *testing.T) {
+	str := `<html><img src="foo" /></html>`
+	tr := NewHTMLTransformer()
+
+	r := strings.NewReader(str)
+	if r == nil {
+		t.Fatalf("unable to create reader for str '%s'\n", str)
+	}
+
+	after := tr.Transform(Response{Reader: r})
+
+	// read the response
+	resp, err := ioutil.ReadAll(after.Reader)
+	if err != nil {
+		t.Fatalf("error reading transformed response err=%s\n", err)
+	}
+
+	answer := `<html><head></head><body><img src="/url/Zm9v"/></body></html>`
+
+	res := string(resp)
+
+	if res != answer {
+		t.Fatalf("parsed response '%s' doens't match answer\n", res)
+	}
+}
