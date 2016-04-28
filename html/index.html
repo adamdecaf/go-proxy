@@ -2,6 +2,11 @@
 <html>
   <head>
     <title>Proxy</title>
+    <style>
+      input#url {
+        width: 300px;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -9,8 +14,19 @@
     </header>
 
     <section id="content">
-      <!-- insert form field for url here -->
+      <form action="javascript:proxy_url();">
+        <input type="text" id="url" autofocus />
+        <input type="submit" value="Go" />
+      </form>
     </section>
 
+    <script>
+      function proxy_url() {
+        var raw_url = document.querySelector("#url").value;
+        var to = "./url/" + btoa(raw_url);
+        console.log(to);
+        window.location.href = to;
+      }
+    </script>
   </body>
 </html>
