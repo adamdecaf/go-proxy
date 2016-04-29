@@ -1,0 +1,10 @@
+# go-proxy example config
+
+nginx:
+  build: nginx/
+  net: host
+  ports:
+    - "80:80"
+  restart: always
+  volumes:
+    - /var/log/nginx/:/var/log/nginx/
