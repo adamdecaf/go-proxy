@@ -103,6 +103,10 @@ func makeRequest(req Request) (*Response, error) {
 }
 
 func parseSourceAddress(r http.Request) net.IP {
+	if h := r.Header.Get("X-Real-Ip"); h != "" {
+                return parseFoundIP(h)
+        }
+
 	if h := r.Header.Get("X-Forwarded-For"); h != "" {
 		return parseFoundIP(h)
 	}
