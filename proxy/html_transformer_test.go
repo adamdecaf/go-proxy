@@ -27,7 +27,7 @@ func TestHTMLReplceLinks(t *testing.T) {
 		t.Fatalf("error reading transformed response err=%s\n", err)
 	}
 
-	answer := `<html><head></head><body><p>links</p><ul><li><a href="/url/aHR0cDovL2Zvbw==">Foo</a></li><li><a href="/url/aHR0cDovL2FzaGFubm9uLnVzL2Jhci9iYXo=">BarBaz</a></li></ul></body></html>`
+	answer := `<html><head></head><body><p>links</p><ul><li><a href="/url/aHR0cDovL2FzaGFubm9uLnVzL2Zvbw==">Foo</a></li><li><a href="/url/aHR0cDovL2FzaGFubm9uLnVzL2Jhci9iYXo=">BarBaz</a></li></ul></body></html>`
 
 	res := string(resp)
 
@@ -54,7 +54,7 @@ func TestHTMLReplceLinkHrefs(t *testing.T) {
 		t.Fatalf("error reading transformed response err=%s\n", err)
 	}
 
-	answer := `<html><head><link href="/url/aHR0cDovL2Zvbw=="/></head><body></body></html>`
+	answer := `<html><head><link href="/url/aHR0cDovL2FzaGFubm9uLnVzL2Zvbw=="/></head><body></body></html>`
 
 	res := string(resp)
 
@@ -81,7 +81,7 @@ func TestHTMLReplaceImages(t *testing.T) {
 		t.Fatalf("error reading transformed response err=%s\n", err)
 	}
 
-	answer := `<html><head></head><body><img src="/url/aHR0cDovL2Zvbw=="/></body></html>`
+	answer := `<html><head></head><body><img src="/url/aHR0cDovL2FzaGFubm9uLnVzL2Zvbw=="/></body></html>`
 
 	res := string(resp)
 
@@ -108,7 +108,7 @@ func TestHTMLReplaceScript(t *testing.T) {
 		t.Fatalf("error reading transformed response err=%s\n", err)
 	}
 
-	answer := `<html><head></head><body><script src="/url/aHR0cDovL2Zvbw=="></script></body></html>`
+	answer := `<html><head></head><body><script src="/url/aHR0cDovL2FzaGFubm9uLnVzL2Zvbw=="></script></body></html>`
 
 	res := string(resp)
 
@@ -135,7 +135,7 @@ func TestHTMLReplaceAllElements(t *testing.T) {
 		t.Fatalf("error reading transformed response err=%s\n", err)
 	}
 
-	answer := `<html><head><link href="/url/aHR0cDovL2Zvbw=="/></head><body><img src="/url/aHR0cDovL2Zvbw=="/><script src="/url/aHR0cDovL2Zvbw=="></script><a href="/url/aHR0cDovL2Zvbw==">Foo</a></body></html>`
+	answer := `<html><head><link href="/url/aHR0cDovL2FzaGFubm9uLnVzL2Zvbw=="/></head><body><img src="/url/aHR0cDovL2FzaGFubm9uLnVzL2Zvbw=="/><script src="/url/aHR0cDovL2FzaGFubm9uLnVzL2Zvbw=="></script><a href="/url/aHR0cDovL2FzaGFubm9uLnVzL2Zvbw==">Foo</a></body></html>`
 	res := string(resp)
 
 	if res != answer {
@@ -179,5 +179,16 @@ func TestProxyableUrlCreation(t *testing.T) {
 	res6 := createProxyableUrl(*u, "ashannon.us/path")
 	if res6 != fmt.Sprintf("/url/%s", codec.ToBase64("http://ashannon.us/path")) {
 		t.Fatalf("generated url doesn't match expected = '%s'", res6)
+	}
+
+	// only swap incoming host for proxied path if they match
+	res7 := createProxyableUrl(*u, "style.css")
+	if res7 != fmt.Sprintf("/url/%s", codec.ToBase64("http://ashannon.us/style.css")) {
+		t.Fatalf("generated url doesn't match expected = '%s'", res7)
+	}
+	u4, _ := url.Parse("http://ashannon.us")
+	res8 := createProxyableUrl(*u4, "style.css")
+	if res8 != fmt.Sprintf("/url/%s", codec.ToBase64("http://ashannon.us/style.css")) {
+		t.Fatalf("generated url doesn't match expected = '%s'", res8)
 	}
 }

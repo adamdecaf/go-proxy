@@ -69,6 +69,20 @@ func createProxyableUrl(orig_url url.URL, s string) string {
 		}
 	}
 
+	if p2.Host != orig_url.Path {
+		if p2.Path == "" && p2.Path != orig_url.Path {
+			p2.Path = p2.Host
+			if orig_url.Host == "" {
+				p2.Host = orig_url.Path
+			}
+		}
+
+		if p2.Path == "" && orig_url.Path == "" {
+			p2.Path = p2.Host
+			p2.Host = orig_url.Host
+		}
+	}
+
 	// use the scheme from the original url (if there is one)
 	if orig_url.Scheme != "" {
 		p2.Scheme = orig_url.Scheme
