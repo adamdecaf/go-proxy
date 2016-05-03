@@ -7,6 +7,7 @@ import (
 	"golang.org/x/net/html"
 	"io"
 	"log"
+	"net/url"
 )
 
 type HTMLTransformer struct {
@@ -44,13 +45,29 @@ func (t HTMLTransformer) Transform(in Response) Response {
 	}
 }
 
+// needs the `proxy.Request` object
+func createProxyableUrl(s string) string {
+	parsed, err := url.Parse(s)
+	if err != nil {
+		return s
+	}
+
+	// if there isn't a scheme append 'http'
+	if parsed.Scheme == "" {
+		parsed.Scheme = "http"
+	}
+
+	// append proxy specific url path prefix
+	return fmt.Sprintf("/url/%s", codec.ToBase64(parsed.String()))
+}
+
 // `replaceAHrefs` is a greedy depth-first search and replace for
 // `href` attributes in `a` elements.
 func replaceAHrefs(n *html.Node) {
 	if n.Type == html.ElementNode && n.Data == "a" {
 		for i, a := range n.Attr {
 			if a.Key == "href" {
-				a.Val = fmt.Sprintf("/url/%s", codec.ToBase64(a.Val))
+				a.Val = createProxyableUrl(a.Val)
 			}
 			n.Attr[i] = a
 		}
@@ -66,7 +83,7 @@ func replaceLinkHrefs(n *html.Node) {
 	if n.Type == html.ElementNode && n.Data == "link" {
 		for i, a := range n.Attr {
 			if a.Key == "href" {
-				a.Val = fmt.Sprintf("/url/%s", codec.ToBase64(a.Val))
+				a.Val = createProxyableUrl(a.Val)
 			}
 			n.Attr[i] = a
 		}
@@ -82,7 +99,7 @@ func replaceImgSrcs(n *html.Node) {
 	if n.Type == html.ElementNode && n.Data == "img" {
 		for i, a := range n.Attr {
 			if a.Key == "src" {
-				a.Val = fmt.Sprintf("/url/%s", codec.ToBase64(a.Val))
+				a.Val = createProxyableUrl(a.Val)
 			}
 			n.Attr[i] = a
 		}
@@ -98,7 +115,7 @@ func replaceScriptSrcs(n *html.Node) {
 	if n.Type == html.ElementNode && n.Data == "script" {
 		for i, a := range n.Attr {
 			if a.Key == "src" {
-				a.Val = fmt.Sprintf("/url/%s", codec.ToBase64(a.Val))
+				a.Val = createProxyableUrl(a.Val)
 			}
 			n.Attr[i] = a
 		}
