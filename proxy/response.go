@@ -8,4 +8,5 @@ import (
 // behalf of the requestor.
 type Response struct {
 	Reader io.Reader
+	ContentType string
 }

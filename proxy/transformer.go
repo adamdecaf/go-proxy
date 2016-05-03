@@ -4,12 +4,6 @@ import (
 	"net/url"
 )
 
-var (
-	DefaultTransformers = []Transformer{
-		NewHTMLTransformer(),
-	}
-)
-
 // Transformer is a type which performs some action on a `Response`
 // and returns another `Response`.
 //

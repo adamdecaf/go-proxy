@@ -57,6 +57,7 @@ func get(req Request) (*Response, error) {
 
 	resp := Response{
 		Reader: r.Body,
+		ContentType: r.Header.Get("Content-Type"),
 	}
 
 	return &resp, nil
@@ -82,8 +83,9 @@ func request(req Request) (*Response, error) {
 
 	// fold over transformers off the original response
 	if r != nil {
-		for i := range DefaultTransformers {
-			morphed := DefaultTransformers[i].Transform(req.URL, *r)
+		tr := NewHTMLTransformer()
+		if r.ContentType == "text/html" {
+			morphed := tr.Transform(req.URL, *r)
 			r = &morphed
 		}
 	}
