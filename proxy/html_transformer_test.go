@@ -2,8 +2,9 @@ package proxy
 
 import (
 	"fmt"
-	"io/ioutil"
 	"github.com/adamdecaf/go-proxy/codec"
+	"io/ioutil"
+	"net/url"
 	"strings"
 	"testing"
 )
@@ -17,7 +18,8 @@ func TestHTMLReplceLinks(t *testing.T) {
 		t.Fatalf("unable to create reader for str '%s'\n", str)
 	}
 
-	after := tr.Transform(Response{Reader: r})
+	u, _ := url.Parse("ashannon.us")
+	after := tr.Transform(*u, Response{Reader: r})
 
 	// read the response
 	resp, err := ioutil.ReadAll(after.Reader)
@@ -25,7 +27,7 @@ func TestHTMLReplceLinks(t *testing.T) {
 		t.Fatalf("error reading transformed response err=%s\n", err)
 	}
 
-	answer := `<html><head></head><body><p>links</p><ul><li><a href="/url/aHR0cDovL2Zvbw==">Foo</a></li><li><a href="/url/aHR0cDovLy9iYXIvYmF6">BarBaz</a></li></ul></body></html>`
+	answer := `<html><head></head><body><p>links</p><ul><li><a href="/url/aHR0cDovL2Zvbw==">Foo</a></li><li><a href="/url/aHR0cDovL2FzaGFubm9uLnVzL2Jhci9iYXo=">BarBaz</a></li></ul></body></html>`
 
 	res := string(resp)
 
@@ -43,7 +45,8 @@ func TestHTMLReplceLinkHrefs(t *testing.T) {
 		t.Fatalf("unable to create reader for str '%s'\n", str)
 	}
 
-	after := tr.Transform(Response{Reader: r})
+	u, _ := url.Parse("ashannon.us")
+	after := tr.Transform(*u, Response{Reader: r})
 
 	// read the response
 	resp, err := ioutil.ReadAll(after.Reader)
@@ -69,7 +72,8 @@ func TestHTMLReplaceImages(t *testing.T) {
 		t.Fatalf("unable to create reader for str '%s'\n", str)
 	}
 
-	after := tr.Transform(Response{Reader: r})
+	u, _ := url.Parse("ashannon.us")
+	after := tr.Transform(*u, Response{Reader: r})
 
 	// read the response
 	resp, err := ioutil.ReadAll(after.Reader)
@@ -95,7 +99,8 @@ func TestHTMLReplaceScript(t *testing.T) {
 		t.Fatalf("unable to create reader for str '%s'\n", str)
 	}
 
-	after := tr.Transform(Response{Reader: r})
+	u, _ := url.Parse("ashannon.us")
+	after := tr.Transform(*u, Response{Reader: r})
 
 	// read the response
 	resp, err := ioutil.ReadAll(after.Reader)
@@ -121,7 +126,8 @@ func TestHTMLReplaceAllElements(t *testing.T) {
 		t.Fatalf("unable to create reader for str '%s'\n", str)
 	}
 
-	after := tr.Transform(Response{Reader: r})
+	u, _ := url.Parse("ashannon.us")
+	after := tr.Transform(*u, Response{Reader: r})
 
 	// read the response
 	resp, err := ioutil.ReadAll(after.Reader)
@@ -138,13 +144,40 @@ func TestHTMLReplaceAllElements(t *testing.T) {
 }
 
 func TestProxyableUrlCreation(t *testing.T) {
-	res1 := createProxyableUrl("http://ashannon.us")
+	u, _ := url.Parse("ashannon.us")
+
+	res1 := createProxyableUrl(*u, "http://ashannon.us")
 	if res1 != fmt.Sprintf("/url/%s", codec.ToBase64("http://ashannon.us")) {
 		t.Fatalf("generated url doesn't match expected = '%s'", res1)
 	}
 
-	res2 := createProxyableUrl("ashannon.us")
+	res2 := createProxyableUrl(*u, "ashannon.us")
 	if res2 != fmt.Sprintf("/url/%s", codec.ToBase64("http://ashannon.us")) {
 		t.Fatalf("generated url doesn't match expected = '%s'", res2)
+	}
+
+	res3 := createProxyableUrl(*u, "/path")
+	if res3 != fmt.Sprintf("/url/%s", codec.ToBase64("http://ashannon.us/path")) {
+		t.Fatalf("generated url doesn't match expected = '%s'", res3)
+	}
+
+	// keep urls as valid
+	u2, _ := url.Parse("http://ashannon.us")
+	res4 := createProxyableUrl(*u2, "/path")
+	if res4 != fmt.Sprintf("/url/%s", codec.ToBase64("http://ashannon.us/path")) {
+		t.Fatalf("generated url doesn't match expected = '%s'", res4)
+	}
+
+	// keep https
+	u3, _ := url.Parse("https://ashannon.us")
+	res5 := createProxyableUrl(*u3, "/path")
+	if res5 != fmt.Sprintf("/url/%s", codec.ToBase64("https://ashannon.us/path")) {
+		t.Fatalf("generated url doesn't match expected = '%s'", res5)
+	}
+
+	// keep path on relative urls
+	res6 := createProxyableUrl(*u, "ashannon.us/path")
+	if res6 != fmt.Sprintf("/url/%s", codec.ToBase64("http://ashannon.us/path")) {
+		t.Fatalf("generated url doesn't match expected = '%s'", res6)
 	}
 }

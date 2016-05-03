@@ -1,5 +1,9 @@
 package proxy
 
+import (
+	"net/url"
+)
+
 var (
 	DefaultTransformers = []Transformer{
 		NewHTMLTransformer(),
@@ -11,5 +15,5 @@ var (
 //
 // Typical use cases are for doing things with html or metrics.
 type Transformer interface {
-	Transform(Response) Response
+	Transform(url.URL, Response) Response
 }

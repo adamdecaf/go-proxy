@@ -14,7 +14,7 @@ type HTMLTransformer struct {
 	Transformer
 }
 
-func (t HTMLTransformer) Transform(in Response) Response {
+func (t HTMLTransformer) Transform(orig_url url.URL, in Response) Response {
 	doc, err := html.Parse(in.Reader)
 	if err != nil {
 		log.Printf("error parsing html document err=%s\n", err)
@@ -46,82 +46,105 @@ func (t HTMLTransformer) Transform(in Response) Response {
 }
 
 // needs the `proxy.Request` object
-func createProxyableUrl(s string) string {
-	parsed, err := url.Parse(s)
+func createProxyableUrl(orig_url url.URL, s string) string {
+	p1, err := url.Parse(s)
 	if err != nil {
 		return s
 	}
 
 	// if there isn't a scheme append 'http'
-	if parsed.Scheme == "" {
-		parsed.Scheme = "http"
+	if p1.Scheme == "" {
+		p1.Scheme = "http"
+	}
+
+	// reparse the url
+	// this is because of urls like 'example.com' are parsed as a
+	// Path, but it's under the Host
+	p2, err := url.Parse(p1.String())
+	if err != nil {
+		return s
+	}
+
+	// when a url like 'example.com' is parsed by `url.Parse` it's Host is
+	// blank and it's Path is set to 'example.com'
+	if p2.Host == "" {
+		if orig_url.Host == "" {
+			p2.Host = orig_url.Path
+		} else {
+			p2.Host = orig_url.Host
+		}
+	}
+
+	// use the scheme from the original url (if there is one)
+	if orig_url.Scheme != "" {
+		p2.Scheme = orig_url.Scheme
 	}
 
 	// append proxy specific url path prefix
-	return fmt.Sprintf("/url/%s", codec.ToBase64(parsed.String()))
+	return fmt.Sprintf("/url/%s", codec.ToBase64(p2.String()))
 }
 
 // `replaceAHrefs` is a greedy depth-first search and replace for
 // `href` attributes in `a` elements.
-func replaceAHrefs(n *html.Node) {
+func replaceAHrefs(orig_url url.URL, n *html.Node) {
 	if n.Type == html.ElementNode && n.Data == "a" {
 		for i, a := range n.Attr {
 			if a.Key == "href" {
-				a.Val = createProxyableUrl(a.Val)
+				a.Val = createProxyableUrl(orig_url, a.Val)
 			}
 			n.Attr[i] = a
 		}
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		replaceAHrefs(c)
+		replaceAHrefs(orig_url, c)
 	}
 }
 
 // `replaceLinkHrefs` is a greedy depth-first search and replace for
 // `href` attributes in `link` elements.
-func replaceLinkHrefs(n *html.Node) {
+func replaceLinkHrefs(orig_url url.URL, n *html.Node) {
 	if n.Type == html.ElementNode && n.Data == "link" {
 		for i, a := range n.Attr {
 			if a.Key == "href" {
-				a.Val = createProxyableUrl(a.Val)
+				a.Val = createProxyableUrl(orig_url, a.Val)
 			}
 			n.Attr[i] = a
 		}
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		replaceLinkHrefs(c)
+		replaceLinkHrefs(orig_url, c)
 	}
 }
 
 // replaceImgSrcs is a greedy depth-first search and replace for
 // `src` attributes in `img` elements.
-func replaceImgSrcs(n *html.Node) {
+func replaceImgSrcs(orig_url url.URL, n *html.Node) {
 	if n.Type == html.ElementNode && n.Data == "img" {
 		for i, a := range n.Attr {
 			if a.Key == "src" {
-				a.Val = createProxyableUrl(a.Val)
+				a.Val = createProxyableUrl(orig_url, a.Val)
 			}
 			n.Attr[i] = a
 		}
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		replaceImgSrcs(c)
+		replaceImgSrcs(orig_url, c)
 	}
 }
 
 // replaceScriptSrcs is a greedy depth-first search and replace for
 // `src` attributes in `script` elements.
-func replaceScriptSrcs(n *html.Node) {
+func replaceScriptSrcs(orig_url url.URL, n *html.Node) {
 	if n.Type == html.ElementNode && n.Data == "script" {
 		for i, a := range n.Attr {
 			if a.Key == "src" {
-				a.Val = createProxyableUrl(a.Val)
+				a.Val = createProxyableUrl(orig_url, a.Val)
 			}
 			n.Attr[i] = a
 		}
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		replaceScriptSrcs(c)
+		replaceScriptSrcs(orig_url, c)
 	}
 }
 

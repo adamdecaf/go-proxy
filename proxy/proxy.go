@@ -83,7 +83,7 @@ func request(req Request) (*Response, error) {
 	// fold over transformers off the original response
 	if r != nil {
 		for i := range DefaultTransformers {
-			morphed := DefaultTransformers[i].Transform(*r)
+			morphed := DefaultTransformers[i].Transform(req.URL, *r)
 			r = &morphed
 		}
 	}
