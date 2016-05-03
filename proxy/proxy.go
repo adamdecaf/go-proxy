@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 var (
@@ -84,7 +85,7 @@ func request(req Request) (*Response, error) {
 	// fold over transformers off the original response
 	if r != nil {
 		tr := NewHTMLTransformer()
-		if r.ContentType == "text/html" {
+		if strings.HasPrefix(r.ContentType, "text/html") {
 			morphed := tr.Transform(req.URL, *r)
 			r = &morphed
 		}
