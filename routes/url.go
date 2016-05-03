@@ -42,6 +42,8 @@ func ProxyUrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", res.ContentType)
+
 	fmt.Fprintf(w, string(resp))
 }
 
