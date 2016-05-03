@@ -20,16 +20,10 @@ func (t HTMLTransformer) Transform(orig_url url.URL, in Response) Response {
 		log.Printf("error parsing html document err=%s\n", err)
 	}
 
-	var f func(*html.Node)
-
-	f = func(n *html.Node) {
-		replaceAHrefs(n)
-		replaceImgSrcs(n)
-		replaceScriptSrcs(n)
-		replaceLinkHrefs(n)
-	}
-
-	f(doc)
+	replaceAHrefs(orig_url, doc)
+	replaceImgSrcs(orig_url, doc)
+	replaceScriptSrcs(orig_url, doc)
+	replaceLinkHrefs(orig_url, doc)
 
 	out := new(bytes.Buffer)
 	err = html.Render(out, doc)
